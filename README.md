@@ -244,3 +244,10 @@ Without poetry
 ```bash
 python -m src.main
 ```
+
+## Accessing MySQL
+Database url: `jdbc:mysql://localhost:3306`
+
+Login: `root`
+
+Password: `password123`
