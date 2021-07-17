@@ -251,3 +251,40 @@ Database url: `jdbc:mysql://localhost:3306`
 Login: `root`
 
 Password: `password123`
+
+
+## SQL Queries
+```mysql
+# List the top 3 authors in the given time period
+
+select cf.author_id, name, count(cf.id) commit_counts, organisation, repository
+from authors_dim
+    inner join commits_fact cf
+        on authors_dim.author_id = cf.author_id
+    inner join repositories_dim rd on cf.repo_id = rd.repo_id
+where repository = "hadoop" and organisation = "apache"
+group by cf.author_id
+order by commit_counts desc
+limit 3;
+
+
+# 2. Find the author with the longest contribution window within the time period?
+# A contribution window is the interval between an author’s earliest and latest commit. The
+# commits need not be on consecutive days.
+select TIMESTAMPDIFF(second, min(timestamp), max(timestamp)) contribution_window_in_seconds, min(timestamp) earliest_commit, max(timestamp) latest_commit, name, organisation, repository
+from commits_fact
+inner join authors_dim ad on commits_fact.author_id = ad.author_id
+inner join repositories_dim rd on commits_fact.repo_id = rd.repo_id
+where repository = "hadoop" and organisation = "apache"
+group by commits_fact.author_id
+order by  contribution_window_in_seconds desc
+limit 1;
+
+
+# Query for heatmap (Still need to pivot using pandas after this)
+select count(id) commit_counts, DAYOFWEEK(DATE(timestamp)) day_of_week, floor(hour(time(timestamp)) / 3) hour_of_day
+       from commits_fact
+inner join repositories_dim rd on commits_fact.repo_id = rd.repo_id
+where repository = "hadoop" and organisation = "apache"
+group by day_of_week, hour_of_day
+```
